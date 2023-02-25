@@ -7,8 +7,6 @@ namespace EncryptedPigeon_Server
 {
     internal class Program
     {
-        static int key = 1;
-
         static void Main(string[] args)
         {
             Console.WriteLine("Encrypted Pigion Server!");
@@ -28,14 +26,10 @@ namespace EncryptedPigeon_Server
             while (true)
             {
                 recv = newSocket.ReceiveFrom(data, ref tmpRemote);
-
-                string recievedString = Encoding.ASCII.GetString(data, 0, recv);
-                string decryptedString = Decrypt(recievedString, key);
-                Console.WriteLine($"[{tmpRemote}] {decryptedString}");
+                Console.WriteLine(DecryptedData(data, recv));
             }
 
             
-
             string welcome = "Welcome to my server!";
             data = Encoding.ASCII.GetBytes(welcome);
 
@@ -64,23 +58,27 @@ namespace EncryptedPigeon_Server
             newSocket.Close();
         }
 
-        static string Decrypt(string input, int key)
+        static string DecryptedData(byte[] data, int recv)
         {
-            int shifter = 0;
-            string decryptedInput = "";
+            string decryptedString = "";
+            int key = 11;
+            int shift = 0;
 
-            foreach (char c in input)
+            for (int i = 0; i < recv; i++)
             {
-                int unicodeValue = Convert.ToInt32(c) - (key + shifter);
-                char output = Convert.ToChar(unicodeValue);
-                decryptedInput += output;
+                int unicode = data[i] - (key + shift);
 
-                shifter++;
-                if (shifter > 1)
-                    shifter = 0;
+                if (unicode < 0)
+                    unicode = 0;
+
+                char character = Convert.ToChar(unicode);
+                decryptedString += character;
+
+                shift += 3;
+                if (shift > 15)
+                    shift = 0;
             }
-
-            return decryptedInput;
+            return decryptedString;
         }
     }
 }
